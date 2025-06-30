@@ -3,7 +3,6 @@ package com.jovicheer.whisper_voice_notes_wear
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
 import com.google.gson.Gson

@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.jovicheer.whisper_voice_notes_wear"
+        applicationId = "com.jovicheer.whisper_voice_notes"
         minSdk = 33
         targetSdk = 36
         versionCode = 1
