@@ -1,6 +1,8 @@
 package com.jovicheer.whisper_voice_notes_wear
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.Node
@@ -42,7 +44,16 @@ class WearDataManager(private val context: Context) {
                     phoneNode.id,
                     "/whisper/sync_request",
                     data
-                ).addOnFailureListener { e ->
+                ).addOnSuccessListener {
+                    Log.d("WearDataManager", "同步請求發送成功")
+                    // 設置超時處理
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (notesRepository.isLoading.value) {
+                            Log.w("WearDataManager", "同步請求超時")
+                            notesRepository.setLoading(false)
+                        }
+                    }, 10000) // 10秒超時
+                }.addOnFailureListener { e ->
                     Log.e("WearDataManager", "發送消息失敗", e)
                     notesRepository.setLoading(false)
                 }
