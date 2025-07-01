@@ -2,15 +2,25 @@
 
 **與手機端 Whisper 語音筆記應用程序對接的 WearOS 手錶應用程序，實現穩定的雙向同步功能**
 
-## 🎉 最新更新 (v2.1.0)
+## 🎉 最新更新 (v2.2.0) - 全新UI設計
 
-✅ **同步問題已完全解決！**
+✅ **界面全面重新設計，完美的手錶體驗！**
 
-- 🔧 修正 SharedPreferences key 不匹配問題
-- 📊 改進 JSON 資料格式解析邏輯
-- ⏰ 添加 10 秒超時機制和錯誤恢復
-- 🔍 提供完整的測試和除錯指南
-- 📱 解決應用 ID 衝突問題
+### 🎨 UI/UX 重大改進
+
+- 🔴🟢 **智能連接狀態**: 即時顯示配對手機名稱（如 "Pixel 9 Pro"）和連接狀態
+- ⟲ **優化同步按鈕**: 使用標準的刷新符號，按鈕尺寸縮小（36dp），符號比例更大
+- 🎙️ **標準錄音按鈕**: 經典的紅色圓形錄音按鈕設計（80dp），符合業界標準
+- 📜 **完整滾動體驗**: 整個頁面可滾動，不再固定按鈕區域，充分利用螢幕空間
+- 🎯 **圓形螢幕優化**: 專為 WearOS 圓形螢幕設計的居中布局，避免邊緣被切掉
+- 📏 **精確間距設計**: 32dp 頂部間距，避免按鈕頂到螢幕邊緣
+
+### 🛠️ 功能增強
+
+- 📱 **手機名稱顯示**: 自動識別並顯示配對手機的實際名稱
+- 🔄 **模擬器友好**: 開發環境下自動使用 fallback 測試數據
+- ⚡ **響應式設計**: 在不同手錶尺寸上都有最佳體驗
+- 🎮 **觸控優化**: 所有按鈕都有合適的點擊區域，避免誤觸
 
 ## 🎯 主要功能
 
@@ -23,29 +33,83 @@
 - ✅ **同步狀態**: 實時同步狀態指示器和進度顯示
 - ✅ **空狀態**: 友好的空狀態提示和操作指引
 - ✅ **WearOS 優化**: 專為 WearOS 優化的 Compose UI 界面
+- ✅ **整頁滾動**: 支援完整的頁面滾動，最大化內容顯示空間
+- ✅ **設備識別**: 自動顯示配對手機的實際名稱和連接狀態
 
 ## 🛠️ 最新技術修正
 
-### 🔧 關鍵問題修正
+### 🔧 關鍵問題修正 (v2.1.0)
 
 1. **SharedPreferences Key 統一**
-
    - 修正手機端讀取正確的 `flutter.transcription_records` key
    - 支援多種 key 格式的 fallback 機制
 
 2. **資料格式相容性**
-
    - 支援 timestamp 的毫秒數和 ISO8601 格式解析
    - 強化 JSON 資料類型轉換邏輯
 
 3. **錯誤處理機制**
-
    - 添加 10 秒同步超時保護
    - 改進節點連接和錯誤恢復
 
 4. **應用配置優化**
    - 使用獨立應用 ID: `com.jovicheer.whisper_voice_notes.wear`
    - 避免與手機端應用安裝衝突
+
+### 🎨 UI/UX 全面重構 (v2.2.0)
+
+1. **LazyColumn 架構**
+   ```kotlin
+   // 從固定 Column 改為 LazyColumn，支援整頁滾動
+   LazyColumn(
+       modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+       horizontalAlignment = Alignment.CenterHorizontally
+   ) {
+       item { Spacer(modifier = Modifier.height(32.dp)) }
+       item { 連接狀態和同步按鈕區域 }
+       item { 錄音按鈕 }
+       items(notes) { NoteItem(note = it) }
+   }
+   ```
+
+2. **智能連接狀態顯示**
+   ```kotlin
+   // 動態手機名稱追蹤
+   private val _phoneName = MutableStateFlow("未知設備")
+   val phoneName: StateFlow<String> = _phoneName.asStateFlow()
+   
+   // 實際設備: phoneNode.displayName ?: "手機"
+   // 模擬器環境: "Pixel 9 Pro"
+   ```
+
+3. **標準錄音按鈕設計**
+   ```kotlin
+   // 經典紅色圓形錄音按鈕
+   Box(
+       modifier = Modifier
+           .size(80.dp)  // 用戶調整後的最佳尺寸
+           .background(color = Color(0xFFE53935), shape = CircleShape)
+           .clickable { onRecordClick() }
+   ) {
+       // 內部白色圓點表示錄音狀態
+       Box(modifier = Modifier.size(16.dp)
+           .background(color = Color.White.copy(alpha = 0.3f)))
+   }
+   ```
+
+4. **優化的同步按鈕**
+   ```kotlin
+   Button(
+       onClick = onSyncClick,
+       modifier = Modifier.size(36.dp),  // 縮小的按鈕尺寸
+       enabled = !isLoading
+   ) {
+       Text(
+           text = "⟲",  // 更粗體的Unicode刷新符號
+           style = MaterialTheme.typography.body1
+       )
+   }
+   ```
 
 ## 📋 技術實現
 
@@ -60,40 +124,38 @@ com.jovicheer.whisper_voice_notes_wear/
 │   └── NotesRepository.kt         # 筆記數據儲存庫
 ├── presentation/
 │   ├── MainActivity.kt            # 主要活動
-│   ├── NotesScreen.kt            # 筆記列表 UI
+│   ├── NotesScreen.kt            # 筆記列表 UI (v2.2.0 重新設計)
 │   └── theme/
 │       └── Theme.kt              # WearOS 主題
 ├── utils/
 │   └── DateUtils.kt              # 時間格式化工具
 ├── WearDataService.kt            # WearOS 數據監聽服務
-└── WearDataManager.kt            # 數據通訊管理器
+└── WearDataManager.kt            # 數據通訊管理器 (v2.2.0 增強)
 ```
 
 ### 🔧 核心組件
 
 #### 1. **WearDataService** - 數據監聽服務
-
 - 監聽來自手機的數據變化
 - 處理 `/whisper/sync_response` 路徑的消息
 - 自動更新本地筆記數據
 
-#### 2. **WearDataManager** - 通訊管理器
-
+#### 2. **WearDataManager** - 通訊管理器 (v2.2.0 增強)
 - 發送同步請求到手機端
 - 管理手機與手錶間的連接
 - 處理錯誤和超時情況
+- **新功能**: 追蹤手機名稱和連接狀態
 
 #### 3. **NotesRepository** - 數據管理
-
 - 使用 StateFlow 管理 UI 狀態
 - 提供響應式數據更新
 - 管理加載狀態和同步時間
 
-#### 4. **NotesScreen** - UI 界面
-
+#### 4. **NotesScreen** - UI 界面 (v2.2.0 完全重新設計)
 - 專為 WearOS 優化的 Compose UI
 - 支援圓形和方形手錶螢幕
 - 包含同步按鈕和筆記列表
+- **新特色**: 整頁滾動、智能布局、標準錄音按鈕
 
 ## 📡 通訊協議
 
@@ -163,16 +225,19 @@ adb -s [手錶設備ID] install -r app/build/outputs/apk/debug/app-debug.apk
 2. **手機端準備**: 在手機上錄製一些語音筆記作為測試資料
 3. **手錶端同步**:
    - 在手錶上啟動「語音筆記手錶」應用
-   - 點擊「同步筆記」按鈕
+   - 觀察頂部的連接狀態：🔴/🟢 + 手機名稱
+   - 點擊「⟲」同步按鈕
    - 等待同步完成（通常 < 3 秒）
 4. **驗證結果**: 手錶螢幕應顯示從手機同步的筆記列表
 
-### 4. 查看和管理筆記
+### 4. 查看和管理筆記 (v2.2.0 增強體驗)
 
+- **整頁滾動**: 向上滾動可隱藏按鈕區域，全螢幕查看筆記
 - **時間排序**: 筆記按最新時間倒序排列
 - **重要標記**: 重要筆記會顯示 ⭐ 標記
 - **詳細查看**: 點擊筆記查看完整內容
-- **重新同步**: 隨時點擊同步按鈕獲取最新筆記
+- **重新同步**: 隨時點擊 ⟲ 按鈕獲取最新筆記
+- **錄音準備**: 紅色錄音按鈕已準備好（功能即將推出）
 
 ## 🔍 測試和除錯
 
@@ -188,18 +253,17 @@ adb -s [手錶設備ID] install -r app/build/outputs/apk/debug/app-debug.apk
 adb -s [手錶設備ID] logcat -s WearDataManager:* WearDataService:* MainActivity:*
 
 # 成功同步的關鍵日誌：
-# ✅ "找到手機節點"
+# ✅ "找到手機節點: [手機名稱]"
 # ✅ "同步請求發送成功"
 # ✅ "成功解析 X 筆記錄"
+# ✅ 連接狀態從 🔴 變為 🟢
 ```
 
 ### 🚨 常見問題快速修復
 
-| 問題                 | 症狀                     | 解決方法                           |
-| -------------------- | ------------------------ | ---------------------------------- |
-| **無法找到手機節點** | "沒有找到連接的手機節點" | 檢查 Wear OS 配對狀態              |
-| **同步超時**         | 一直顯示 loading         | 重啟兩個應用，檢查藍牙連接         |
-| **空筆記列表**       | 手錶顯示"沒有筆記"       | 確認手機端有筆記，重新安裝手機應用 |
+| 問題                 | 症狀                     | v2.2.0 解決方法                           |
+| -------------------- | ------------------------ | ----------------------------------------- |
+| **無法找到手機節點** | "沒有找到連接的手機節點" | 檢查 Wear OS 配對狀態，觀察連接狀態指示器 |
 
 ## 🔧 開發者資訊
 

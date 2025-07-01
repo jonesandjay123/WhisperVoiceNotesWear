@@ -54,11 +54,16 @@ class MainActivity : ComponentActivity() {
                 
                 val notes = notesRepository.notes.collectAsState().value
                 val isLoading = notesRepository.isLoading.collectAsState().value
+                val isConnected = dataManager.isConnected.collectAsState().value
+                val phoneName = dataManager.phoneName.collectAsState().value
                 
                 NotesListScreen(
                     notes = notes,
                     isLoading = isLoading,
-                    onSyncClick = { syncNotes() }
+                    isConnected = isConnected,
+                    phoneName = phoneName,
+                    onSyncClick = { syncNotes() },
+                    onRecordClick = { /* TODO: 實現錄音功能 */ }
                 )
             }
         }
